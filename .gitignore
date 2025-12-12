@@ -1,0 +1,30 @@
+# Build directories
+build/
+_build/
+out/
+dist/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CTestTestfile.cmake
+_Deps/
+
+# Object files
+*.o
+*.obj
+
+# Executables
+*.exe
+*.dll
+
+# wxWidgets specific
+wx/setup.h
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
