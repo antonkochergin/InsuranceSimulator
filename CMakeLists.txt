@@ -1,29 +1,33 @@
-set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 cmake_minimum_required(VERSION 3.16)
 project(MyWxApp)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Отключить предупреждение о манифесте (опционально)
-add_definitions(-DwxUSE_WARNING_FOR_COMMON_CONTROLS=0)
+# Статическая линковка — обязательно!
+set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 
-# Пути к wxWidgets
-set(WX_ROOT "C:/wxWidgets")
-set(WX_LIB_DIR "C:/wxWidgets/build-mingw/lib/gcc_x64_lib")
+# Пути к wxWidgets (убедитесь, что путь верный!)
+set(wxWidgets_ROOT_DIR "C:/wxWidgets")
+set(WX_LIB_DIR "${wxWidgets_ROOT_DIR}/build-mingw/lib/gcc_x64_lib")
 
 # Заголовки
-include_directories("${WX_ROOT}/include")
+include_directories("${wxWidgets_ROOT_DIR}/include")
 include_directories("${WX_LIB_DIR}")  # для wx/setup.h
 
 # Библиотеки
 link_directories("${WX_LIB_DIR}")
 
-# Исполняемый файл
-add_executable(MyWxApp src/main.cpp)
+# Исходники
+file(GLOB SOURCES "src/*.cpp")
+add_executable(MyWxApp ${SOURCES})
 
-# Все необходимые системные библиотеки
+# GUI-приложение (без консоли)
+set_target_properties(MyWxApp PROPERTIES WIN32_EXECUTABLE TRUE)
+
+# Линковка — ОБЯЗАТЕЛЬНО в этом порядке!
 target_link_libraries(MyWxApp
-    # Статические библиотеки wxWidgets
+    # wxWidgets (статические)
     wxmsw33u_core
     wxmsw33u_adv
     wxbase33u
@@ -33,26 +37,21 @@ target_link_libraries(MyWxApp
     wxregexu
     wxexpat
 
-    # Системные Windows-библиотеки (ВСЕ, что нужно)
+    # Системные зависимости Windows (должны быть В КОНЦЕ!)
+    gdiplus      # GDI+ → Gdip*
+    uxtheme      # темы → __imp_*Theme*
+    comctl32     # Common Controls
+    version      # GetFileVersionInfoW
+    oleacc       # CreateStdAccessibleObject
+    msimg32      # AlphaBlend
+    imm32
+    winmm
+    shlwapi
     gdi32
     comdlg32
-    winspool
-    winmm
-    shell32
-    comctl32
     ole32
     oleaut32
     uuid
-    rpcrt4
-    shlwapi
-    advapi32
-    wsock32
-    gdiplus          # ← GDI+
-    msimg32          # ← AlphaBlend
-    version          # ← GetFileVersionInfoW
-    imm32
-    wininet
-    uxtheme          # ← темы оформления
-    dwmapi           # ← DWM (Aero)
-    oleacc           # ← доступность
+    kernel32
+    user32
 )
