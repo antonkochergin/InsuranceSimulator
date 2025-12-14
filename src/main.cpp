@@ -187,6 +187,37 @@ private:
     std::unique_ptr<InsuranceGame> m_game;
     wxTextCtrl* m_log;
     wxButton* m_nextBtn;
+    void showGameOverDialog(bool isBankrupt) {
+        m_nextBtn->Enable(false);
+        m_game->is_over = true;
+
+        wxString title, message;
+        if (isBankrupt) {
+            title = "Bankruptcy!";
+            message = wxString::Format(
+                "Your insurance company went bankrupt in month %d!\n\n"
+                "Final capital: %.2f\n\n"
+                "Better luck next time!",
+                m_game->current_month,
+                m_game->capital
+            );
+        }
+        else {
+            title = "Game Completed!";
+            message = wxString::Format(
+                "You successfully ran your insurance company for %d months!\n\n"
+                "Final capital: %.2f\n\n"
+                "%s",
+                m_game->total_months,
+                m_game->capital,
+                m_game->capital > 30000.0 ? "Profit! Well done!" :
+                m_game->capital == 30000.0 ? "You broke even." : "Loss. Try again!"
+            );
+        }
+
+        wxMessageDialog dialog(this, message, title, wxOK | wxICON_INFORMATION);
+        dialog.ShowModal();
+    }
 
     void OnNextMonth(wxCommandEvent& event) {
         if (m_game->is_over) return;
@@ -198,8 +229,7 @@ private:
         m_log->AppendText(m_game->payTax() + "\n");
         if (m_game->isBankrupt()) {
             m_log->AppendText("Company is bankrupt!\n");
-            m_nextBtn->Enable(false);
-            m_game->is_over = true;
+            showGameOverDialog(true); // true = банкротство
             return;
         }
 
@@ -210,8 +240,7 @@ private:
         m_log->AppendText(m_game->sellPolicies());
         if (m_game->isBankrupt()) {
             m_log->AppendText("Company is bankrupt!\n");
-            m_nextBtn->Enable(false);
-            m_game->is_over = true;
+            showGameOverDialog(true);
             return;
         }
 
@@ -220,8 +249,7 @@ private:
         m_log->AppendText(m_game->processClaims());
         if (m_game->isBankrupt()) {
             m_log->AppendText("Company is bankrupt!\n");
-            m_nextBtn->Enable(false);
-            m_game->is_over = true;
+            showGameOverDialog(true);
             return;
         }
 
@@ -236,8 +264,7 @@ private:
         // Конец игры?
         if (m_game->current_month >= m_game->total_months) {
             m_log->AppendText(wxString::Format("\nGame finished! Final capital: %.2f\n", m_game->capital));
-            m_nextBtn->Enable(false);
-            m_game->is_over = true;
+            showGameOverDialog(false); // false = успешное завершение
         }
     }
 
